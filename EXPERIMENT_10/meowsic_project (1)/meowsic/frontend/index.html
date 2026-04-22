@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meowsic — Purrfect Tunes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0d14;
+      --surface:    #16161f;
+      --card:       #1e1e2e;
+      --accent:     #ff6b9d;
+      --accent2:    #c084fc;
+      --accent3:    #38bdf8;
+      --text:       #f0e6ff;
+      --muted:      #8b7fa8;
+      --border:     rgba(255,107,157,0.18);
+      --glow:       0 0 30px rgba(255,107,157,0.25);
+      --radius:     16px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background ── */
+    .bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 30%, rgba(192,132,252,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 80% 70%, rgba(255,107,157,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(56,189,248,0.06) 0%, transparent 70%);
+      animation: bgPulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse {
+      from { opacity: 0.7; }
+      to   { opacity: 1; }
+    }
+
+    /* Floating notes */
+    .notes {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .note {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 0;
+      animation: floatNote linear infinite;
+    }
+    @keyframes floatNote {
+      0%   { opacity: 0; transform: translateY(0) rotate(0deg); }
+      10%  { opacity: 0.35; }
+      90%  { opacity: 0.25; }
+      100% { opacity: 0; transform: translateY(-110vh) rotate(360deg); }
+    }
+
+    /* ── Layout ── */
+    .wrapper {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── Brand panel ── */
+    .brand-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+      gap: 1.5rem;
+    }
+
+    .logo-wrap {
+      text-align: center;
+    }
+
+    .cat-logo {
+      font-size: 5.5rem;
+      line-height: 1;
+      filter: drop-shadow(0 0 20px rgba(255,107,157,0.6));
+      animation: catBob 3s ease-in-out infinite;
+    }
+    @keyframes catBob {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .brand-name {
+      font-family: 'Fredoka One', cursive;
+      font-size: 4rem;
+      background: linear-gradient(135deg, #ff6b9d, #c084fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      line-height: 1;
+      margin-top: 0.25rem;
+    }
+
+    .brand-tagline {
+      font-size: 1.05rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+    .feature-list li {
+      display: flex; align-items: center; gap: 0.65rem;
+      font-size: 0.95rem; color: var(--muted); font-weight: 600;
+    }
+    .feature-list li span.icon {
+      font-size: 1.25rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .paw-divider {
+      display: flex; gap: 0.4rem; margin-top: 1rem;
+    }
+    .paw-divider span { font-size: 1.1rem; opacity: 0.4; }
+
+    /* ── Auth panel ── */
+    .auth-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2.5rem;
+    }
+
+    .auth-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem 2.5rem 2rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--glow), 0 25px 60px rgba(0,0,0,0.5);
+      animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(30px) scale(0.95); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 1.75rem;
+      gap: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: none; outline: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all 0.25s ease;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #ff6b9d, #c084fc);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(255,107,157,0.35);
+    }
+
+    /* Forms */
+    .form-section { display: none; }
+    .form-section.visible { display: block; animation: fadeUp 0.3s ease both; }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .form-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.7rem;
+      margin-bottom: 0.3rem;
+      background: linear-gradient(135deg, #ff6b9d, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .form-sub {
+      color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; font-weight: 600;
+    }
+
+    .field {
+      margin-bottom: 1.1rem;
+    }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .input-wrap {
+      position: relative; display: flex; align-items: center;
+    }
+    .input-icon {
+      position: absolute; left: 12px;
+      font-size: 1rem; pointer-events: none; user-select: none;
+    }
+    .field input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      background: var(--surface);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,107,157,0.15);
+    }
+    .field input::placeholder { color: var(--muted); opacity: 0.6; }
+
+    .pwd-toggle {
+      position: absolute; right: 12px;
+      background: none; border: none;
+      cursor: pointer; color: var(--muted); font-size: 1rem;
+      transition: color 0.2s;
+    }
+    .pwd-toggle:hover { color: var(--accent); }
+
+    .submit-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #ff6b9d, #c084fc);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      margin-top: 0.4rem;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 5px 20px rgba(255,107,157,0.35);
+    }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,107,157,0.5); }
+    .submit-btn:active { transform: translateY(0); }
+
+    /* Alerts */
+    .alert {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.3s ease both;
+    }
+    .alert-error   { background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.35); color: #ff8080; }
+    .alert-success { background: rgba(56,189,100,0.15); border: 1px solid rgba(56,189,100,0.35); color: #4ade80; }
+
+    /* Password strength */
+    .strength-bar { height: 4px; border-radius: 99px; margin-top: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 99px; transition: width 0.3s, background 0.3s; width: 0%; }
+
+    /* Divider */
+    .divider { text-align: center; color: var(--muted); font-size: 0.78rem; font-weight: 700; margin: 1rem 0; position: relative; }
+    .divider::before, .divider::after {
+      content: ''; position: absolute; top: 50%;
+      width: 40%; height: 1px; background: rgba(255,255,255,0.07);
+    }
+    .divider::before { left: 0; } .divider::after { right: 0; }
+
+    /* ── Dashboard page ── */
+    .dashboard-wrapper {
+      display: none;
+      position: fixed; inset: 0; z-index: 10;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      animation: cardIn 0.5s ease both;
+    }
+    .dashboard-wrapper.show { display: flex; }
+    .dash-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem 3rem;
+      text-align: center;
+      box-shadow: var(--glow);
+      max-width: 480px; width: 90%;
+    }
+    .dash-avatar { font-size: 4rem; margin-bottom: 0.5rem; }
+    .dash-welcome { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--accent); }
+    .dash-user    { font-size: 1rem; color: var(--muted); font-weight: 700; margin-top: 0.25rem; }
+    .dash-message { font-size: 0.95rem; color: var(--text); margin-top: 1rem; opacity: 0.8; }
+    .now-playing {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--surface); border-radius: 12px; padding: 0.85rem 1.2rem;
+      margin-top: 1.5rem; border: 1px solid var(--border);
+    }
+    .np-bar { display: flex; gap: 3px; align-items: flex-end; }
+    .np-bar span {
+      display: block; width: 4px; background: var(--accent); border-radius: 2px;
+      animation: npBounce 0.8s ease-in-out infinite alternate;
+    }
+    .np-bar span:nth-child(1) { height: 14px; animation-delay: 0s; }
+    .np-bar span:nth-child(2) { height: 22px; animation-delay: 0.15s; }
+    .np-bar span:nth-child(3) { height: 10px; animation-delay: 0.3s; }
+    .np-bar span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+    .np-bar span:nth-child(5) { height: 12px; animation-delay: 0.25s; }
+    @keyframes npBounce { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
+    .np-info strong { display: block; font-weight: 800; font-size: 0.95rem; }
+    .np-info span   { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+    .logout-btn {
+      padding: 0.65rem 2rem;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 1rem;
+    }
+    .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Responsive ── */
+    @media (max-width: 800px) {
+      .wrapper { grid-template-columns: 1fr; }
+      .brand-panel { display: none; }
+      .auth-panel { padding: 2rem 1rem; min-height: 100vh; align-items: flex-start; padding-top: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating background notes -->
+<div class="bg-layer"></div>
+<div class="notes" id="notesContainer"></div>
+
+<!-- ══════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════ -->
+<div class="wrapper" id="mainWrapper">
+
+  <!-- Brand Panel -->
+  <div class="brand-panel">
+    <div class="logo-wrap">
+      <div class="cat-logo">🐱</div>
+      <div class="brand-name">Meowsic</div>
+      <div class="brand-tagline">Stream. Purr. Repeat.</div>
+    </div>
+
+    <ul class="feature-list">
+      <li><span class="icon">🎵</span> Millions of purrfect tracks</li>
+      <li><span class="icon">🐾</span> Curated cat-approved playlists</li>
+      <li><span class="icon">🌙</span> Late-night meow sessions</li>
+      <li><span class="icon">🎧</span> Hi-Fi whisker-quality audio</li>
+    </ul>
+
+    <div class="paw-divider">
+      <span>🐾</span><span>🐾</span><span>🐾</span>
+    </div>
+  </div>
+
+  <!-- Auth Panel -->
+  <div class="auth-panel">
+    <div class="auth-card">
+
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">🐱 Sign In</button>
+        <button class="tab-btn" id="registerTab" onclick="switchTab('register')">✨ Join Free</button>
+      </div>
+
+      <!-- Alert banner -->
+      <div id="alertBanner" style="display:none"></div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div class="form-section visible" id="loginForm">
+        <div class="form-title">Welcome back!</div>
+        <div class="form-sub">We missed your meow 😺</div>
+
+        <div class="field">
+          <label>User ID</label>
+          <div class="input-wrap">
+            <span class="input-icon">🐾</span>
+            <input type="text" id="loginUserId" placeholder="your_cat_id" autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔐</span>
+            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+            <button class="pwd-toggle" type="button" onclick="togglePwd('loginPassword', this)">👁️</button>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="handleLogin()">🎵 Enter Meowsic</button>
+      </div>
+
+      <!-- ── REGISTER FORM ── -->
+      <div class="form-section" id="registerForm">
+        <div class="form-title">Join the clowder!</div>
+        <div class="form-sub">Create your free account 🐾</div>
+
+        <div class="field">
+          <label>Display Name</label>
+          <div class="input-wrap">
+            <span class="input-icon">😸</span>
+            <input type="text" id="regDisplayName" placeholder="Midnight Purrkins" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>User ID <span style="color:#ff6b9d;font-size:0.7rem">(letters, numbers, underscore)</span></label>
+          <div class="input-wrap">
+            <span class="input-icon">🐾</span>
+            <input type="text" id="regUserId" placeholder="fluffy_dj99" oninput="validateUserId(this)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email <span style="color:var(--muted);font-size:0.7rem">(optional)</span></label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input type="email" id="regEmail" placeholder="meow@example.com" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔐</span>
+            <input type="password" id="regPassword" placeholder="Min. 6 characters" oninput="checkStrength(this.value)" />
+            <button class="pwd-toggle" type="button" onclick="togglePwd('regPassword', this)">👁️</button>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        </div>
+
+        <div class="field">
+          <label>Confirm Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="regConfirmPwd" placeholder="Repeat password" />
+            <button class="pwd-toggle" type="button" onclick="togglePwd('regConfirmPwd', this)">👁️</button>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="handleRegister()">🐱 Create Account</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DASHBOARD (post-login)
+══════════════════════════════════════ -->
+<div class="dashboard-wrapper bg-layer" id="dashboardWrapper">
+  <div class="dash-card">
+    <div class="dash-avatar">😸</div>
+    <div class="dash-welcome">Purrfect!</div>
+    <div class="dash-user" id="dashUserName"></div>
+    <div class="dash-message">You're in the groove. Time to let the music purr. 🎶</div>
+
+    <div class="now-playing">
+      <div class="np-bar">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="np-info">
+        <strong>Moonlight Meowody</strong>
+        <span>Whisker &amp; The Claws · Nap Time Lofi</span>
+      </div>
+    </div>
+
+    <button class="logout-btn" onclick="handleLogout()">← Sign Out</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCRIPT
+══════════════════════════════════════ -->
+<script>
+  /* ── Floating notes ── */
+  const noteSymbols = ['🎵','🎶','🎸','🎹','🐾','😺','🎤','🎼'];
+  const container   = document.getElementById('notesContainer');
+  for (let i = 0; i < 18; i++) {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = noteSymbols[i % noteSymbols.length];
+    note.style.left     = `${Math.random() * 100}%`;
+    note.style.animationDuration  = `${8 + Math.random() * 12}s`;
+    note.style.animationDelay     = `${Math.random() * 10}s`;
+    note.style.fontSize = `${0.9 + Math.random() * 1.2}rem`;
+    container.appendChild(note);
+  }
+
+  /* ── Tab switch ── */
+  function switchTab(tab) {
+    document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+    document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+    document.getElementById('loginForm').classList.toggle('visible', tab === 'login');
+    document.getElementById('registerForm').classList.toggle('visible', tab === 'register');
+    clearAlert();
+  }
+
+  /* ── Alert ── */
+  function showAlert(msg, type='error') {
+    const el = document.getElementById('alertBanner');
+    el.innerHTML = `<div class="alert alert-${type}">${type==='error'?'⚠️':'✅'} ${msg}</div>`;
+    el.style.display = 'block';
+  }
+  function clearAlert() {
+    const el = document.getElementById('alertBanner');
+    el.style.display = 'none'; el.innerHTML = '';
+  }
+
+  /* ── Password toggle ── */
+  function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    const isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    btn.textContent = isText ? '👁️' : '🙈';
+  }
+
+  /* ── Password strength ── */
+  function checkStrength(val) {
+    const fill = document.getElementById('strengthFill');
+    let score = 0;
+    if (val.length >= 6)  score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const pct   = (score / 5) * 100;
+    const color = score <= 1 ? '#ff4444' : score <= 3 ? '#fbbf24' : '#4ade80';
+    fill.style.width      = pct + '%';
+    fill.style.background = color;
+  }
+
+  /* ── User ID validation ── */
+  function validateUserId(input) {
+    input.value = input.value.replace(/[^a-zA-Z0-9_]/g, '');
+  }
+
+  /* ── Demo login (client-side simulation) ── 
+     In production this submits to LoginServlet   */
+  const DEMO_USERS = {};   // populated on register during demo session
+
+  function handleLogin() {
+    clearAlert();
+    const userId = document.getElementById('loginUserId').value.trim();
+    const pwd    = document.getElementById('loginPassword').value;
+
+    if (!userId || !pwd) { showAlert('Please fill in all fields 🐾'); return; }
+
+    /* ── Check demo users first ── */
+    if (DEMO_USERS[userId] && DEMO_USERS[userId] === pwd) {
+      showDashboard(userId);
+      return;
+    }
+
+    /* ── In production, submit to servlet ──
+    const form = document.createElement('form');
+    form.method = 'POST'; form.action = 'LoginServlet';
+    const addField = (n,v) => { const i=document.createElement('input'); i.name=n; i.value=v; form.appendChild(i); };
+    addField('userId', userId); addField('password', pwd);
+    document.body.appendChild(form); form.submit();
+    ── */
+
+    showAlert('Invalid user ID or password 😿');
+  }
+
+  function handleRegister() {
+    clearAlert();
+    const displayName = document.getElementById('regDisplayName').value.trim();
+    const userId      = document.getElementById('regUserId').value.trim();
+    const email       = document.getElementById('regEmail').value.trim();
+    const pwd         = document.getElementById('regPassword').value;
+    const confirmPwd  = document.getElementById('regConfirmPwd').value;
+
+    if (!displayName || !userId || !pwd) { showAlert('Please fill in all required fields 🐾'); return; }
+    if (userId.length < 4) { showAlert('User ID must be at least 4 characters 📏'); return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(userId)) { showAlert('User ID can only contain letters, numbers and underscores'); return; }
+    if (pwd.length < 6)  { showAlert('Password must be at least 6 characters 🔐'); return; }
+    if (pwd !== confirmPwd) { showAlert('Passwords do not match 🙀'); return; }
+    if (DEMO_USERS[userId]) { showAlert('That User ID is already taken 😾'); return; }
+
+    DEMO_USERS[userId] = pwd;
+    showAlert(`Account created! Welcome, ${displayName} 🎉`, 'success');
+    setTimeout(() => { switchTab('login'); clearAlert(); }, 1500);
+
+    /* ── In production, submit to servlet ──
+    const form = document.createElement('form');
+    form.method = 'POST'; form.action = 'RegisterServlet';
+    const addField = (n,v) => { const i=document.createElement('input'); i.name=n; i.value=v; form.appendChild(i); };
+    addField('userId', userId); addField('password', pwd);
+    addField('confirmPassword', confirmPwd);
+    addField('displayName', displayName); addField('email', email);
+    document.body.appendChild(form); form.submit();
+    ── */
+  }
+
+  /* ── Dashboard ── */
+  function showDashboard(userId) {
+    document.getElementById('dashUserName').textContent = `@${userId}`;
+    document.getElementById('mainWrapper').style.display = 'none';
+    const d = document.getElementById('dashboardWrapper');
+    d.classList.add('show');
+    d.style.background = 'var(--bg)';
+  }
+
+  function handleLogout() {
+    document.getElementById('mainWrapper').style.display = 'grid';
+    document.getElementById('dashboardWrapper').classList.remove('show');
+    document.getElementById('loginUserId').value = '';
+    document.getElementById('loginPassword').value = '';
+    // In production: window.location.href = 'LogoutServlet';
+  }
+
+  /* ── Check URL params (from servlet redirects) ── */
+  const params = new URLSearchParams(window.location.search);
+  const errMap = {
+    invalid_credentials: 'Invalid user ID or password 😿',
+    missing_fields:      'Please fill in all required fields 🐾',
+    userid_length:       'User ID must be 4–50 characters 📏',
+    userid_format:       'User ID: only letters, numbers and underscores',
+    password_short:      'Password must be at least 6 characters 🔐',
+    password_mismatch:   'Passwords do not match 🙀',
+    userid_taken:        'That User ID is already taken 😾',
+    register_failed:     'Registration failed. Please try again.',
+    server_error:        'Server error. Please try again later 😿',
+  };
+  if (params.get('error') && errMap[params.get('error')]) {
+    if (params.get('tab') === 'register') switchTab('register');
+    showAlert(errMap[params.get('error')]);
+  }
+  if (params.get('success') === 'registered') showAlert('Account created! Please sign in 🎉', 'success');
+  if (params.get('success') === 'logged_out') showAlert('Signed out successfully. Bye! 🐾', 'success');
+</script>
+</body>
+</html>
